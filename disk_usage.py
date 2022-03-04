@@ -15,18 +15,24 @@ def check_disk_usage(disk,min_gb,min_percent):
     return False
 
 
+def check_root_full():
+    return check_disk_usage('/', min_gb=2, min_percent=20)
+
+
 def check_reboot():
     ''' Returns True if the computer has a pending Reboot. '''
     return os.path.exists('/run/reboot-required')
 
 
 def main():
-    if check_reboot():
-        print('pending reboot')
-
-    if check_disk_usage('/', min_gb=2, min_percent=10):
-        print('Not enough space')
-        sys.exit(1)
+    checks=[
+        (check_reboot, 'Pending Reboot'),
+        (check_root_full, 'Disk Full'),
+    ]
+    for check, msg in checks:
+        if check():
+            print(msg)
+            sys.exit(1)
 
     print('Everything ok!')
     sys.exit(0)
